@@ -14,4 +14,4 @@ def is_3d(path):
 
     # Предсказание
     prediction = model.predict(img_array)
-    return prediction[0] <= 0.5
+    return prediction[0] < 0.5
