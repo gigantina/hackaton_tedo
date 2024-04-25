@@ -1,10 +1,12 @@
 import numpy as np
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.models import load_model
+import tensorflow as tf
 
 def is_3d(path):
     #model_path = '3d_detection_model.h5'
-    model_path = "C:\\Users\\Eugene\\Documents\\hack\\3d_detection_model2.h5"
+    model_path = "C:\\Users\\Eugene\\Documents\\hack\\3d_detection_model_complete.h5"
+    print(tf.__version__)
     model = load_model(model_path)
     img = image.load_img(path, target_size=(180, 180))  # Измените размер согласно параметрам, использованным при обучении
 
