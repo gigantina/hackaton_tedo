@@ -1,6 +1,6 @@
 from PIL import Image
 
-def is_low_quality(path, min_dpi=220, min_resolution=(1024, 768)):
+def is_high_quality(path, min_dpi=220, min_resolution=(1024, 768)):
     try:
         img = Image.open(path)
         dpi = img.info.get("dpi", (0, 0))

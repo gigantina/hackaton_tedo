@@ -33,19 +33,14 @@ def is_defective(path, min_blur=100, max_noise=40, min_bright=50, max_bright=200
     result['blur'] = True
     result['noise'] = True
     result['brightness'] = True
-    result['bokeh'] = True
-    if blur < max_blur:
+    if blur < min_blur:
         result['blur'] = False
     if noise >= max_noise:
         result['noise'] = False
     if brightness < min_bright or brightness > max_bright:
         result['brightness'] = False
 
-    for key in result:
-        if not result[key]:
-            return (True, result)
-    return (False, result)
-
+    return result
 
 
 

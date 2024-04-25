@@ -29,10 +29,10 @@ def is_looking_at_camera(landmarks):
             return True
     return False
 
-def gaze_detection(path):
+def no_looking(path):
 	image = load_image(path)
 	faces = find_faces(image)
 
 
 	landmarks = get_landmarks(image, faces)
-	return is_looking_at_camera(landmarks)
+	return not is_looking_at_camera(landmarks)
