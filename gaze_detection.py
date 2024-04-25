@@ -2,7 +2,7 @@ import cv2
 import dlib
 import numpy as np
 
-faces_model_path = "C:\\Users\\Eugene\\Documents\\hack\models\\shape_predictor_68_face_landmarks.dat"
+faces_model_path = "shape_predictor_68_face_landmarks.dat"
 
 def load_image(image_path):
     return cv2.imread(image_path)
@@ -36,3 +36,7 @@ def no_looking(path):
 
 	landmarks = get_landmarks(image, faces)
 	return not is_looking_at_camera(landmarks)
+
+
+if __name__ == '__main__':
+	print(no_looking('C:\\Users\\Eugene\\Documents\\hack\\bad\\dreamstime_m_172552664.jpg'))
