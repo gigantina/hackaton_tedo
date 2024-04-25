@@ -18,7 +18,7 @@ def is_ok(path):
     brightness = defects_values['brightness']
     colors = is_color_ok(path)
     res = 0.15 * (brightness + blur + noise + looking_at_camera) + 0.3 * (colors) + 0.1 * (graphics_3d) >= 0.5
-    return res
+    return int(res)
 
 
 def main():
