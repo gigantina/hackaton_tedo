@@ -30,10 +30,13 @@ def main():
 
     with open(output_filename, 'w') as file:
         for filename in files:
-            if filename.endswith('.jpg') or filename.endswith('.png'):  # Проверка, что файл является изображением
-                full_path = os.path.join(folder_path, filename)
-                result = is_ok(full_path)
-                file.write(f"{filename};{result}\n")
+        	try:
+	            if filename.endswith('.jpg') or filename.endswith('.png'):  # Проверка, что файл является изображением
+	                full_path = os.path.join(folder_path, filename)
+	                result = is_ok(full_path)
+	                file.write(f"{filename};{result}\n")
+	        except Exception as e:
+	        	pass
 
 
 if __name__ == "__main__":
