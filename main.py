@@ -17,27 +17,40 @@ def is_ok(path):
     noise = defects_values['noise']
     brightness = defects_values['brightness']
     colors = is_color_ok(path)
+    criteria = dict()
+    criteria['blur'] = blur
+    criteria['noise'] = noise
+    criteria['brightness'] = brightness
+    criteria['colors'] = colors
+    criteria['looking'] = looking_at_camera
+    criteria['quiality'] = low_quality
+    criteria['3d'] = graphics_3d
     res = 0.15 * (brightness + blur + noise + looking_at_camera) + 0.3 * (colors) + 0.1 * (graphics_3d) >= 0.5
-    return int(res)
+    return int(res), criteria
 
 
 def main():
-    folder_path = '/test'
+    folder_path = 'C:\\Users\\Eugene\\Downloads\\Ai\\TedoStyle'
 
-    output_filename = '/results/output.txt'
+    output_filename = 'output2.txt'
 
     files = os.listdir(folder_path)
 
     with open(output_filename, 'w') as file:
+        file.write(f"file;result;blur;noise;brightness;colors;looking;quality;3d\n")
         for filename in files:
-        	try:
-	            if filename.endswith('.jpg') or filename.endswith('.png'):  # Проверка, что файл является изображением
-	                full_path = os.path.join(folder_path, filename)
-	                result = is_ok(full_path)
-	                file.write(f"{filename};{result}\n")
-	        except Exception as e:
-	        	pass
-
+            try:
+                if filename.endswith('.jpg') or filename.endswith('.png'):  # Проверка, что файл является изображением
+                    full_path = os.path.join(folder_path, filename)
+                    result = is_ok(full_path)
+                    string = f'{filename};{result[0]};'
+                    for criterium in result[1]:
+                        string += str(result[1][criterium]) + ';'
+                    file.write(f"{string[:-1]}\n")
+            except Exception as e:
+                print('!!!')
+                print(e)
+                print('!!!')
 
 if __name__ == "__main__":
     main()

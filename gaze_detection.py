@@ -25,7 +25,7 @@ def is_looking_at_camera(landmarks):
         right_eye = np.array([landmark.part(45).x, landmark.part(45).y])
         eye_line = right_eye - left_eye
         angle = np.arctan2(eye_line[1], eye_line[0]) * 180.0 / np.pi
-        if abs(angle) < 10:  # angle threshold might need adjustment
+        if abs(angle) < 10:
             return True
     return False
 
