@@ -18,3 +18,15 @@ def is_high_quality(path, min_dpi=220, min_resolution=(1024, 768)):
     except Exception as e:
         print(f"Ошибка: {e}")
         return True
+
+def get_high_quality(path):
+    # Define the command and its arguments as a list of strings
+    command = [
+            'python', 'inference_realesrgan.py',
+            '-n', 'RealESRGAN_x4plus',
+            '-i', path,
+            '--face_enhance'
+    ]
+
+    # Execute the command
+    result = subprocess.run(command, capture_output=True, text=True)

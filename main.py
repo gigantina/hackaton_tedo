@@ -1,9 +1,12 @@
 from detection3d import is_no_3d
-from quality import is_high_quality
-from gaze_detection import no_looking
+from quality import is_high_quality, get_high_quality
+from gaze_detection import no_looking, get_no_looking
 from defects import is_defective
 from colors import is_color_ok
+from filter import get_good_colors
 import os
+from quality import get_high_quality
+
 
 
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' - отключение всех сообщений от TensorFlow
@@ -30,23 +33,30 @@ def is_ok(path):
 
 
 def main():
-    folder_path = 'C:\\Users\\Eugene\\Downloads\\Ai\\TedoStyle'
+    folder_path = '/test'
 
-    output_filename = 'output2.txt'
+    output_path = '/results'
 
     files = os.listdir(folder_path)
 
     with open(output_filename, 'w') as file:
-        file.write(f"file;result;blur;noise;brightness;colors;looking;quality;3d\n")
         for filename in files:
             try:
                 if filename.endswith('.jpg') or filename.endswith('.png'):  # Проверка, что файл является изображением
                     full_path = os.path.join(folder_path, filename)
-                    result = is_ok(full_path)
-                    string = f'{filename};{result[0]};'
-                    for criterium in result[1]:
-                        string += str(result[1][criterium]) + ';'
-                    file.write(f"{string[:-1]}\n")
+                    full_path_out = os.path.join(output_path, filename)
+                    result, criteria = is_ok(full_path)
+                    image = cv2.imread(full_path)
+                    if not result:
+                        for criterium in criteria:
+                            if criteria['looking']:
+                                image = get_no_looking(image)
+                            if criteria['colors']:
+                                image = get_good_colors(image)
+                            if criteria['brightness'] or criteria['blur'] or criteria['noise'] or criteria['quality']:
+                                image = get_high_quality(image)
+                            else:
+                                cv2.imwrite(full_path_out, image)
             except Exception as e:
                 print('!!!')
                 print(e)

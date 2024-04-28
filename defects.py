@@ -30,15 +30,15 @@ def is_defective(path, min_blur=100, max_noise=40, min_bright=50, max_bright=200
     noise = get_noise(image)
     brightness = get_brightness(image)
     result = dict()
-    result['blur'] = True
-    result['noise'] = True
-    result['brightness'] = True
+    result['blur'] = False
+    result['noise'] = False
+    result['brightness'] = False
     if blur < min_blur:
-        result['blur'] = False
+        result['blur'] = True
     if noise >= max_noise:
-        result['noise'] = False
+        result['noise'] = True
     if brightness < min_bright or brightness > max_bright:
-        result['brightness'] = False
+        result['brightness'] = True
 
     return result
 
