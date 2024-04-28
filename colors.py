@@ -1,78 +1,68 @@
-import pathlib
 import cv2
-import cv2.typing
+import os
 import numpy as np
+import json
+
+with open('dominant_colors.json', 'r') as f:
+    colors_to_check = json.load(f)
+palette = []
+for _, color in colors_to_check:
+    palette.append(color)
+
+def euclidean_distance(color1, color2):
+    return np.sqrt(np.sum((color1 - color2) ** 2))
+
+def is_color_close(average_color, palette, threshold=7):
+    # Check if the average color is close to any color in the palette
+    for color in palette:
+        if euclidean_distance(average_color, color) < threshold:
+            return True
+    return False
+
+def average_color(image_path, threshold=10):
+    # Load the image
+    img = cv2.imread(image_path)
+
+    # Filter out very dark pixels
+    mask = np.all(img > [threshold, threshold, threshold], axis=-1)
+    valid_pixels = img[mask]
+
+    # Calculate the mean of valid pixels if any
+    if valid_pixels.size > 0:
+        average = valid_pixels.mean(axis=0)
+    else:
+        average = [0, 0, 0]  # Default to black if no valid pixels found
+
+    # Convert to RGB if needed (OpenCV uses BGR by default)
+    average_color = np.array(average, dtype=np.uint8)[::-1]
+
+    # Display the average color for verification
+    average_image = np.full((100, 100, 3), average_color, dtype=np.uint8)
+
+    return average_color
+
+# Example palette (list of RGB tuples)
+#palette = [(0, 44, 98),    (0, 76, 137),
+#    (0, 94, 169),    (217, 215, 216),
+#    (212, 215, 219),    (127, 172, 191),
+#    (131, 152, 174),    (91, 155, 204),
+#    (60, 119, 174)]
 
 
-def count_acceptable_colors_percent_in_buffer(img_bgr: cv2.typing.MatLike, percent: int) -> float:
-    ''' Вычисление доли подходящих цветов в буфере bgr '''
-
-    hsv: cv2.typing.MatLike = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-
-    # black
-    hsv_black_lower = np.array([0, 0, 0])
-    hsv_black_upper = np.array([0, 0, 5])
-    mask = cv2.inRange(hsv, hsv_black_lower, hsv_black_upper)
-    count_black = cv2.countNonZero(mask)
-
-    hue_delta22 = int(360 * percent / 400)
-
-    # red = hsv(0, 255, 255), h: 0-179
-    hsv_red_lower1 = np.array([int(360 / 2) - 1 - hue_delta22, 0, 20])
-    hsv_red_upper1 = np.array([int(360 / 2) - 1, 255, 255])
-    mask = cv2.inRange(hsv, hsv_red_lower1, hsv_red_upper1)
-    count_red = cv2.countNonZero(mask)
-
-    hsv_red_lower2 = np.array([0, 0, 20])
-    hsv_red_upper2 = np.array([0 + hue_delta22, 255, 255])
-    mask = cv2.inRange(hsv, hsv_red_lower2, hsv_red_upper2)
-    count_red += cv2.countNonZero(mask)
-
-    # blue = hsv(240, 255, 255)
-    hsv_blue_lower = np.array([int(240 / 2) - hue_delta22, 0, 20])
-    hsv_blue_upper = np.array([int(240 / 2) + hue_delta22, 255, 255])
-    mask = cv2.inRange(hsv, hsv_blue_lower, hsv_blue_upper)
-    count_blue = cv2.countNonZero(mask)
-
-    # yellow = hsv(57, 255, 255)
-    hsv_yellow_lower = np.array([int(57 / 2) - hue_delta22, 0, 20])
-    hsv_yellow_upper = np.array([int(57 / 2) + hue_delta22, 255, 255])
-    mask = cv2.inRange(hsv, hsv_yellow_lower, hsv_yellow_upper)
-    count_yellow = cv2.countNonZero(mask)
-
-    return (count_red + count_blue + count_yellow) / (hsv.shape[0] * hsv.shape[1] - count_black)
-
-
-def count_acceptable_colors_percent_in_file(filepath: pathlib.Path, percent: int = 20) -> float:
-    """
-    Вычисление доли подходящих цветов в файле
-
-    Args:
-        filepath (pathlib.Path): Путь к файлу с изображением
-        percent (int): "Ширина" hue подходящих цветов (по умолчанию 20%). Если значение равно 0, то используется только сам цвет и его оттенки.
-
-    Returns:
-        float: Доля подходящих цветов в файле
-    """
-    img = cv2.imdecode(np.fromfile(filepath, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
-    return count_acceptable_colors_percent_in_buffer(img, percent)
-
-
-def main():
-    images_dir = pathlib.Path(r"data\Фото в стиле ТеДо")
-    for fs_item in images_dir.iterdir():
-        if fs_item.is_file():
-            try:
-                r = count_acceptable_colors_percent_in_file(fs_item, 20)
-                if 0.70 <= r <= 0.95:
-                    print(f"{r:4.3f} | {fs_item}")
-            except cv2.error:
-                continue
+def process_directory(directory, palette):
+    results = []
+    for filename in os.listdir(directory):
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff', '.tif')):
+            print(filename)
+            image_path = os.path.join(directory, filename)
+            avg_color = average_color(image_path)
+            close_to_palette = is_color_close(avg_color, palette)
+            results.append((filename, avg_color.tolist(), "Close" if close_to_palette else "Not close"))
+        else:
+            results.append((filename, None, "Failed to load"))
+    return results
 
 def is_color_ok(path):
-    r = count_acceptable_colors_percent_in_file(path)
-    return 0.70 <= r <= 0.95
-
-
-if __name__ == "__main__":
-    main()
+    avg_color = average_color(path)
+    close_to_palette = is_color_close(avg_color, palette)
+    return close_to_palette
